@@ -1,4 +1,6 @@
 import socket
+
+from http.http_framing import Framing
 from http.http_parser import parser
 
 
@@ -8,7 +10,9 @@ BUFFER_SIZE = 100
 
 
 def main():
+
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
     server.bind((HOST, PORT))
     server.listen()
 
@@ -17,30 +21,46 @@ def main():
     connection = None
 
     try:
+
         connection, address = server.accept()
+
         print(f"Connected: {address}")
 
-        raw_data = b""
+        framing = Framing()
 
         while True:
+
             chunk = connection.recv(BUFFER_SIZE)
 
             if chunk == b"":
                 break
 
             print(f"Received {len(chunk)} bytes")
-            raw_data += chunk
 
-        parser(raw_data)
+            complete_request = framing.new_bytes(chunk)
+
+            if complete_request is not None:
+
+                request = parser(
+                    complete_request.decode("utf-8")
+                )
+
+                print("\n--- COMPLETE REQUEST ---")
+                print(request)
+
+                break
 
     except Exception as error:
+
         print(f"Server error: {error}")
 
     finally:
+
         if connection is not None:
             connection.close()
 
         server.close()
+
         print("Server closed")
 
 
