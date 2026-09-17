@@ -1,10 +1,8 @@
-import json
 import socket
 
 
 HOST = "127.0.0.1"
 PORT = 5000
-BUFFER_SIZE = 1024
 
 
 def main():
@@ -13,46 +11,17 @@ def main():
 
     print("Connected to server")
 
-    try:
-        while True:
-            user_input = input(
-                "Enter message (type 'stop' to close): "
-            ).strip()
+    request = (
+        "GET /hello HTTP/1.1\r\n"
+        "Host: localhost:5000\r\n"
+        "User-Agent: TinyClient/1.0\r\n"
+        "Accept: text/plain\r\n"
+        "\r\n"
+    )
 
-            if user_input.lower() == "stop":
-                shutdown_message = {
-                    "type": "system",
-                    "action": "shutdown"
-                }
+    client.sendall(request.encode("utf-8"))
 
-                client.sendall(
-                    json.dumps(shutdown_message).encode()
-                )
-
-                break
-
-            message = {
-                "type": "user",
-                "data": user_input
-            }
-
-            client.sendall(
-                json.dumps(message).encode()
-            )
-
-            raw_response = client.recv(BUFFER_SIZE)
-
-            if not raw_response:
-                print("Server disconnected")
-                break
-
-            response = json.loads(raw_response.decode())
-
-            print("Server:", response)
-
-    finally:
-        client.close()
-        print("Client closed")
+    client.close()
 
 
 if __name__ == "__main__":

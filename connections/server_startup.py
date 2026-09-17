@@ -1,10 +1,10 @@
-import json
 import socket
+from http.http_parser import parser
 
 
 HOST = "127.0.0.1"
 PORT = 5000
-BUFFER_SIZE = 1024
+BUFFER_SIZE = 100
 
 
 def main():
@@ -20,30 +20,18 @@ def main():
         connection, address = server.accept()
         print(f"Connected: {address}")
 
-        while True:
-            raw_data = connection.recv(BUFFER_SIZE)
+        raw_data = b""
 
-            if not raw_data:
-                print("Client disconnected")
+        while True:
+            chunk = connection.recv(BUFFER_SIZE)
+
+            if chunk == b"":
                 break
 
-            data = json.loads(raw_data.decode())
+            print(f"Received {len(chunk)} bytes")
+            raw_data += chunk
 
-            if data["type"] == "system":
-                if data["action"] == "shutdown":
-                    print("Shutdown requested")
-                    break
-
-            elif data["type"] == "user":
-                print("Client:", data["data"])
-
-                response = {
-                    "data": "received"
-                }
-
-                connection.sendall(
-                    json.dumps(response).encode()
-                )
+        parser(raw_data)
 
     except Exception as error:
         print(f"Server error: {error}")
