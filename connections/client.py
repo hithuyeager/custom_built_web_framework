@@ -21,8 +21,14 @@ def main():
 
     client.sendall(request.encode("utf-8"))
 
+    data = client.recv(1000)
+
+    print(data.decode("utf-8"))
+    
+
     client.close()
 
 
 if __name__ == "__main__":
-    main()
+    for i in range(10000):
+        main()

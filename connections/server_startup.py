@@ -10,6 +10,7 @@ BUFFER_SIZE = 100
 
 
 def main():
+    no_of_responses = 0
 
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -21,37 +22,38 @@ def main():
     connection = None
 
     try:
-
-        connection, address = server.accept()
-
-        print(f"Connected: {address}")
-
-        framing = Framing()
-
         while True:
 
-            chunk = connection.recv(BUFFER_SIZE)
+            connection, address = server.accept()
 
-            if chunk == b"":
-                break
+            print(f"Connected: {address}")
 
-            print(f"Received {len(chunk)} bytes")
+            framing = Framing()
 
-            complete_request = framing.new_bytes(chunk)
+            while True:
 
-            if complete_request is not None:
+                chunk = connection.recv(BUFFER_SIZE)
 
-                request = parser(
-                    complete_request.decode("utf-8")
-                )
+                if chunk == b"":
+                    break
 
-                print("\n--- COMPLETE REQUEST ---")
-                print(request)
-                obj = Responses()
-                obj.server_error()
-                connection.sendall(raw_response(obj))
+                print(f"Received {len(chunk)} bytes")
 
-                break
+                complete_request = framing.new_bytes(chunk)
+
+                if complete_request is not None:
+
+                    request = parser(
+                        complete_request.decode("utf-8")
+                    )
+
+                    print("\n--- COMPLETE REQUEST ---")
+                    print("response no:",no_of_responses)
+                    no_of_responses+=1
+                    print(request)
+                    obj = Responses()
+                    connection.sendall(raw_response(obj))
+                    break
 
     except Exception as error:
 
