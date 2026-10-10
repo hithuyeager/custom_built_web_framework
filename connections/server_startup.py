@@ -1,8 +1,8 @@
 import socket
 
-from http.http_framing import Framing
-from http.http_parser import parser
-
+from tiny_http.http_framing import Framing
+from tiny_http.http_parser import parser
+from tiny_http.responses import Responses,raw_response
 
 HOST = "127.0.0.1"
 PORT = 5000
@@ -47,6 +47,9 @@ def main():
 
                 print("\n--- COMPLETE REQUEST ---")
                 print(request)
+                obj = Responses()
+                obj.server_error()
+                connection.sendall(raw_response(obj))
 
                 break
 
